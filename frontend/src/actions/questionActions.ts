@@ -11,7 +11,7 @@ export const fetchQuestion = (url) => async (dispatch) => {
     const response = await axios.post('/api/generate-question', { url });
     dispatch({
       type: FETCH_QUESTION_SUCCESS,
-      payload: response.data,
+      payload: JSON.parse(response.data),
     });
   } catch (error) {
     dispatch({

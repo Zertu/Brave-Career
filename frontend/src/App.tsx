@@ -4,40 +4,57 @@ import { fetchQuestion } from './actions/questionActions';
 
 const App = () => {
   const [url, setUrl] = useState('');
+  const [isValidUrl, setIsValidUrl] = useState(true);
   const dispatch = useDispatch();
   
-  // 从 Redux Store 中获取生成的问题和选项
   const questionData = useSelector((state) => state.questionData);
   const { question, options, loading, error } = questionData;
 
-  // 提交 URL 时触发的函数
+  // URL validation function
+  const validateUrl = (inputUrl) => {
+    const urlPattern = new RegExp(
+      '^(https?:\\/\\/)?' + // protocol
+      '((([a-zA-Z\\d]([a-zA-Z\\d-]*[a-zA-Z\\d])*)\\.)+[a-zA-Z]{2,}|' + // domain name
+      '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+      '(\\:\\d+)?(\\/[-a-zA-Z\\d%_.~+]*)*' + // port and path
+      '(\\?[;&a-zA-Z\\d%_.~+=-]*)?' + // query string
+      '(\\#[-a-zA-Z\\d_]*)?$', // fragment locator
+      'i'
+    );
+    return urlPattern.test(inputUrl);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (url) {
+    if (validateUrl(url)) {
+      setIsValidUrl(true);
       dispatch(fetchQuestion(url));
+    } else {
+      setIsValidUrl(false);
     }
   };
 
   return (
     <div className="app-container">
-      <h1>内容分类器</h1>
+      <h1>Content Classifier</h1>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="输入网址 (e.g., https://apple.com)"
+          placeholder="Enter a URL (e.g., https://apple.com)"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           required
         />
-        <button type="submit">生成问题</button>
+        <button type="submit">Generate Question</button>
       </form>
 
-      {loading && <p>加载中...</p>}
-      {error && <p>发生错误: {error}</p>}
+      {!isValidUrl && <p style={{ color: 'red' }}>Please enter a valid URL</p>}
+      {loading && <p>Loading...</p>}
+      {error && <p>Error: {error}</p>}
       
       {question && (
         <div className="question-container">
-          <h2>问题: {question}</h2>
+          <h2>Question: {question}</h2>
           <ul>
             {options.map((option, index) => (
               <li key={index}>{option}</li>
